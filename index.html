@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YNS Media Studio — AI Redaksi & Editor EYD (yns.or.id)</title>
+
+  <!-- Google Fonts: Merriweather (Editorial Serif) & Plus Jakarta Sans (Clean UI Sans) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;0,900;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Konfigurasi Tema Tailwind: Modern Islamic Editorial UI -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            yns: {
+              bg: '#F8FAF9',
+              ink: '#1A1A1A',
+              emeraldDark: '#064E3B',
+              emerald: '#047857',
+              emeraldSoft: '#ECFDF5',
+              emeraldTint: '#F0FDF4',
+              gold: '#B45309',
+              goldBright: '#D97706',
+              goldSoft: '#FFFBEB',
+              border: '#E2E8E5'
+            }
+          },
+          fontFamily: {
+            serif: ['Merriweather', 'Georgia', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="bg-yns-bg text-yns-ink font-sans antialiased min-h-screen flex flex-col selection:bg-yns-emerald selection:text-white">
+
+  <!-- ==================== TOAST NOTIFICATION CONTAINER ==================== -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-[calc(100%-2rem)] pointer-events-none"></div>
+
+  <!-- ==================== HEADER / MASTHEAD ==================== -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-yns-border shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-wrap items-center justify-between py-3 gap-3">
+        <!-- Brand & Logo YNS -->
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-yns-emeraldDark to-yns-emerald text-white flex items-center justify-center font-serif font-black text-lg shadow-sm relative border border-yns-emerald">
+            Y
+            <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-yns-goldBright border-2 border-white"></span>
+          </div>
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <h1 class="font-serif font-black text-base sm:text-lg tracking-tight text-yns-emeraldDark leading-none">
+                YNS Media Studio
+              </h1>
+              <span id="ai-status-pill" class="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-yns-emeraldSoft text-yns-emerald border border-emerald-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-yns-emerald animate-pulse"></span>
+                Gemini AI Siap
+              </span>
+            </div>
+            <p class="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5">
+              AI Redaksi &amp; Editor EYD V • Yayasan Nashirus Sunnah Purbalingga (<span class="text-yns-emerald font-semibold">yns.or.id</span>)
+            </p>
+          </div>
+        </div>
+
+        <!-- Navigasi Kanan: Riwayat & Pengaturan API -->
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="openHistoryDrawer()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-yns-emeraldSoft text-yns-emeraldDark border border-yns-border text-xs font-bold shadow-sm transition-all active:scale-95">
+            <svg class="w-4 h-4 text-yns-emerald" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Riwayat Artikel</span>
+            <span id="header-history-count" class="px-1.5 py-0.5 rounded-md bg-yns-emeraldSoft text-yns-emeraldDark text-[10px] font-extrabold">0</span>
+          </button>
+
+          <button type="button" onclick="openApiModal()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-yns-emeraldDark hover:bg-yns-emerald text-white text-xs font-bold shadow-sm transition-all active:scale-95">
+            <svg class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+            </svg>
+            <span class="hidden sm:inline">Pengaturan API</span>
+            <span class="sm:hidden">API</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== MAIN WORKSPACE: 2 KOLOM ==================== -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- ================================================================= -->
+      <!-- PANEL KIRI (5 KOLOM): FORMULIR INPUT 5W+1H                        -->
+      <!-- ================================================================= -->
+      <section class="lg:col-span-5 bg-white rounded-2xl border border-yns-border p-5 sm:p-6 shadow-sm space-y-5">
+        <!-- Header Form + Tombol Isi Contoh Cepat -->
+        <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-4">
+          <div>
+            <span class="text-[11px] font-bold uppercase tracking-wider text-yns-gold">Input Redaksi 5W+1H</span>
+            <h2 class="font-serif font-bold text-lg sm:text-xl text-yns-emeraldDark mt-0.5">Catatan Lapangan Mentah</h2>
+            <p class="text-xs text-slate-500 mt-1">Tulis santai saja—AI akan merapikan ejaan EYD V, KBBI, &amp; struktur berita.</p>
+          </div>
+          <button type="button" onclick="fillQuickExample()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-yns-goldSoft hover:bg-amber-100 text-yns-gold border border-amber-200 text-xs font-bold transition-all active:scale-95 shrink-0">
+            <svg class="w-3.5 h-3.5 text-yns-goldBright" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            <span>Isi Contoh Cepat</span>
+          </button>
+        </div>
+
+        <form id="form-5w1h" onsubmit="handleGenerateSubmit(event)" class="space-y-4">
+          <!-- 1. Kategori Publikasi & Gaya Bahasa -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label for="in-kategori" class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">Kategori Publikasi</label>
+              <select id="in-kategori" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm font-semibold text-yns-emeraldDark bg-white focus:ring-2 focus:ring-yns-emerald/20 focus:border-yns-emerald outline-none transition-all">
+                <option value="Kajian Islam & Dakwah">Kajian Islam &amp; Dakwah</option>
+                <option value="Laporan Donasi & Sosial">Laporan Donasi &amp; Sosial</option>
+                <option value="Kegiatan Yayasan">Kegiatan Yayasan</option>
+                <option value="Pendidikan & Pelatihan">Pendidikan &amp; Pelatihan</option>
+                <option value="Pengumuman Resmi">Pengumuman Resmi</option>
+              </select>
+            </div>
+            <div>
+              <label for="in-gaya" class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">Gaya Bahasa</label>
+              <select id="in-gaya" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm font-semibold text-yns-emeraldDark bg-white focus:ring-2 focus:ring-yns-emerald/20 focus:border-yns-emerald outline-none transition-all">
+                <option value="Jurnalistik Santun (Standar Berita)">Jurnalistik Santun</option>
+                <option value="Inspiratif Dakwah">Inspiratif Dakwah</option>
+                <option value="Resmi Kelembagaan">Resmi Kelembagaan</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 2. Progress Bar Kelengkapan 5W+1H Real-time -->
+          <div class="p-3.5 rounded-xl bg-yns-bg border border-yns-border space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold text-yns-emeraldDark">Kelengkapan Unsur 5W+1H</span>
+              <span id="progress-5w1h-label" class="font-extrabold text-yns-gold">0% (0/6)</span>
+            </div>
+            <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+              <div id="progress-5w1h-bar" class="h-full bg-yns-emerald rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <!-- 3. Input 5W + 1H Bahasa Indonesia -->
+          <div class="space-y-3.5">
+            <!-- APA (What) -->
+            <div>
+              <label for="in-apa" class="flex items-center gap-2 text-xs font-bold text-slate-800 mb-1.5">
+                <span class="px-2 py-0.5 rounded-md bg-yns-emeraldSoft text-yns-emeraldDark text-[10px] font-extrabold uppercase tracking-wider border border-emerald-200">APA • What</span>
+                <span>Peristiwa / Kegiatan Utama <span class="text-red-600">*</span></span>
+              </label>
+              <input type="text" id="in-apa" required oninput="update5W1HProgress()" placeholder="Contoh: kajian rutin ahad pagi bahas keikhlasan beramal" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-yns-emerald/20 focus:border-yns-emerald outline-none transition-all" />
+            </div>
+
+            <!-- SIAPA (Who) -->
+            <div>
+              <label for="in-siapa" class="flex items-center gap-2 text-xs font-bold text-slate-800 mb-1.5">
+                <span class="px-2 py-0.5 rounded-md bg-yns-emeraldSoft text-yns-emeraldDark text-[10px] font-extrabold uppercase tracking-wider border border-emerald-200">SIAPA • Who</span>
+                <span>Penyelenggara, Pemateri &amp; Peserta <span class="text-red-600">*</span></span>
+              </label>
+              <input type="text" id="in-siapa" required oninput="update5W1HProgress()" placeholder="Contoh: yayasan nashirus sunnah, ustadz ahmad fauzi, 180 jamaah purbalingga" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-yns-emerald/20 focus:border-yns-emerald outline-none transition-all" />
+            </div>
+
+            <!-- KAPAN & DI MANA -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="in-kapan" class="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                  <span class="px-2 py-0.5 rounded-md bg-yns-emeraldSoft text-yns-emeraldDark text-[10px] font-extrabold uppercase tracking-wider border border-emerald-200">KAPAN</span>
+                  <span>Waktu <span class="text-red-600">*</span></span>
+                </label>
+                <input type="text" id="in-kapan" required oninput="update5W1HProgress()" placeholder="Ahad 22 nov 2026 jam 08.00 wib" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-yns-emerald/20 focus:border-yns-emerald outline-none transition-all" />
+              </div>
+
+              <div>
+                <label for="in-dimana" class="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1.5">
+                  <span class="px-2 py-0.5 rounded-md bg-yns-emeraldSoft text-yns-emeraldDark text-[10px] font-extrabold uppercase tracking-wider border border-emerald-200">DI MANA</span>
+                  <span>Lokasi <span class="text-red-600">*</span></span>
+                </label>
+                <input type="text" id="in-dimana" required oninput="update5W1HProgress()" placeholder="Masjid Griya Belajar Purbalingga" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-yns-emerald/20 focus:border-yns-emerald outline-none transition-all" />
+              </div>
+            </div>
+
+            <!-- MENGAPA (Why) -->
+            <div>
+              <label for="in-mengapa" class="flex items-center gap-2 text-xs font-bold text-slate-800 mb-1.5">
+                <span class="px-2 py-0.5 rounded-md bg-yns-goldSoft text-yns-gold text-[10px] font-extrabold uppercase tracking-wider border border-amber-200">MENGAPA • Why</span>
+                <span>Tujuan / Latar Belakang</span>
+              </label>
+              <textarea id="in-mengapa" rows="2" oninput="update5W1HProgress()" placeholder="Contoh: biar jamaah makin paham adab menuntut ilmu & meluruskan niat dlm beribadah" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm leading-relaxed focus:ring-2 focus:ring-yns-emerald/20 focus:border-yns-emerald outline-none resize-y transition-all"></textarea>
+            </div>
+
+            <!-- BAGAIMANA (How) -->
+            <div>
+              <label for="in-bagaimana" class="flex items-center gap-2 text-xs font-bold text-slate-800 mb-1.5">
+                <span class="px-2 py-0.5 rounded-md bg-yns-goldSoft text-yns-gold text-[10px] font-extrabold uppercase tracking-wider border border-amber-200">BAGAIMANA • How</span>
+                <span>Jalannya Acara / Poin Materi / Rincian</span>
+              </label>
+              <textarea id="in-bagaimana" rows="4" oninput="update5W1HProgress()" placeholder="Tulis poin rincian acara, materi penting, jumlah paket donasi, atau suasana kegiatan..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm leading-relaxed focus:ring-2 focus:ring-yns-emerald/20 focus:border-yns-emerald outline-none resize-y transition-all"></textarea>
+            </div>
+          </div>
+
+          <!-- 4. Bagian Opsional (Collapsible): Kutipan Narasumber & Info Tambahan -->
+          <div class="rounded-2xl border border-yns-border overflow-hidden bg-slate-50/70">
+            <button type="button" onclick="toggleOptionalSection()" class="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-slate-100/70 transition-colors">
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-yns-emerald" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span class="text-xs font-bold text-yns-emeraldDark">Kutipan Narasumber &amp; Info Tambahan / Donasi (Opsional)</span>
+              </div>
+              <svg id="optional-chevron" class="w-4 h-4 text-slate-500 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            <div id="optional-section-body" class="hidden px-4 pb-4 pt-2 space-y-3 border-t border-yns-border bg-white">
+              <!-- Kutipan Narasumber -->
+              <div class="space-y-2">
+                <div class="text-[11px] font-bold uppercase tracking-wider text-yns-emerald">Kutipan Narasumber</div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <input type="text" id="in-quote-speaker" placeholder="Nama Narasumber" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:border-yns-emerald outline-none" />
+                  <input type="text" id="in-quote-role" placeholder="Jabatan / Peran" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:border-yns-emerald outline-none" />
+                </div>
+                <textarea id="in-quote-text" rows="2" placeholder="Isi kutipan mentah (AI akan merapikan ejaannya tanpa mengubah makna)..." class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:border-yns-emerald outline-none resize-y"></textarea>
+              </div>
+
+              <!-- Info Tambahan / Ekor Berita / Donasi -->
+              <div class="space-y-1.5 pt-1">
+                <label for="in-ekor-info" class="block text-[11px] font-bold uppercase tracking-wider text-yns-gold">
+                  Info Tambahan / Ekor Berita / Rekening Donasi
+                </label>
+                <textarea id="in-ekor-info" rows="2" placeholder="Contoh: jadwal kajian berikutnya, harapan pengurus, atau info rekening BSI Yayasan Nashirus Sunnah Purbalingga..." class="w-full px-3 py-2 rounded-xl border border-amber-200 bg-yns-goldSoft/40 text-xs sm:text-sm focus:border-yns-goldBright outline-none resize-y"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. Tombol Generate & Reset -->
+          <div class="pt-2 flex flex-col sm:flex-row gap-2.5">
+            <button type="submit" id="btn-generate" class="flex-1 py-3.5 px-5 rounded-xl bg-gradient-to-r from-yns-emeraldDark to-yns-emerald hover:from-yns-emerald hover:to-yns-emeraldDark text-white font-bold text-sm shadow-md shadow-emerald-900/15 transition-all flex items-center justify-center gap-2 active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed">
+              <svg id="btn-generate-icon" class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+              </svg>
+              <span id="btn-generate-text">Generate &amp; Perbaiki EYD dengan AI</span>
+            </button>
+
+            <button type="button" onclick="resetForm()" class="px-4 py-3 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 font-bold text-sm transition-all">
+              Reset
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- PANEL KANAN (7 KOLOM): STUDIO PENULISAN INTERAKTIF & PRATINJAU    -->
+      <!-- ================================================================= -->
+      <section class="lg:col-span-7 space-y-5">
+
+        <!-- Loading State Bertahap (Aktif saat AI sedang bekerja) -->
+        <div id="studio-loading" class="hidden bg-white rounded-2xl border border-yns-border p-8 sm:p-12 shadow-sm text-center space-y-6">
+          <div class="w-16 h-16 rounded-2xl bg-yns-emeraldSoft border border-emerald-200 mx-auto flex items-center justify-center">
+            <div class="w-8 h-8 border-4 border-emerald-200 border-t-yns-emerald rounded-full animate-spin"></div>
+          </div>
+          <div class="space-y-1.5">
+            <h3 class="font-serif font-bold text-lg text-yns-emeraldDark">AI Redaksi Sedang Bekerja...</h3>
+            <p id="loading-stage-text" class="text-sm font-semibold text-yns-emerald">1. Menganalisis kelengkapan 5W+1H...</p>
+          </div>
+          <!-- 3 Indikator Tahap -->
+          <div class="max-w-md mx-auto grid grid-cols-3 gap-2 text-[11px] font-bold">
+            <div id="stage-pill-1" class="px-2.5 py-2 rounded-xl bg-yns-emeraldSoft text-yns-emeraldDark border border-emerald-200 transition-all">
+              1. Analisis 5W+1H
+            </div>
+            <div id="stage-pill-2" class="px-2.5 py-2 rounded-xl bg-slate-100 text-slate-400 border border-slate-200 transition-all">
+              2. EYD V &amp; KBBI
+            </div>
+            <div id="stage-pill-3" class="px-2.5 py-2 rounded-xl bg-slate-100 text-slate-400 border border-slate-200 transition-all">
+              3. Piramida Terbalik
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State Awal -->
+        <div id="studio-empty" class="bg-white rounded-2xl border border-dashed border-emerald-200 p-10 sm:p-14 text-center space-y-4 shadow-sm">
+          <div class="w-16 h-16 rounded-2xl bg-yns-emeraldSoft text-yns-emeraldDark mx-auto flex items-center justify-center border border-emerald-100">
+            <svg class="w-8 h-8 text-yns-emerald" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </div>
+          <div class="max-w-md mx-auto space-y-2">
+            <h3 class="font-serif font-bold text-xl text-yns-emeraldDark">Studio Penulisan Editorial YNS</h3>
+            <p class="text-xs sm:text-sm text-slate-500 leading-relaxed">
+              Isi poin <strong>5W+1H</strong> di panel kiri (atau klik <strong>"Isi Contoh Cepat"</strong>), lalu tekan tombol Generate. Gemini AI akan menyunting ejaan sesuai <strong>EYD V &amp; KBBI</strong> sekaligus menyusunnya menjadi berita siap tayang untuk <strong>yns.or.id</strong>.
+            </p>
+          </div>
+        </div>
+
+        <!-- Studio Hasil Artikel (Tampil setelah Generate) -->
+        <div id="studio-result" class="hidden space-y-4">
+
+          <!-- Bar Tab Tampilan + Statistik Real-time -->
+          <div class="bg-white rounded-2xl border border-yns-border p-3 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <!-- 3 Tab -->
+            <div class="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+              <button type="button" data-studio-tab="editor" onclick="switchStudioTab('editor')" class="studio-tab-btn px-3 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all">
+                Editor Interaktif
+              </button>
+              <button type="button" data-studio-tab="portal" onclick="switchStudioTab('portal')" class="studio-tab-btn px-3 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all">
+                Portal yns.or.id
+              </button>
+              <button type="button" data-studio-tab="html" onclick="switchStudioTab('html')" class="studio-tab-btn px-3 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all">
+                HTML WordPress
+              </button>
+            </div>
+
+            <!-- Statistik Kata & Waktu Baca -->
+            <div class="flex items-center justify-end gap-2 text-[11px] font-bold">
+              <span id="stat-word-count" class="px-2.5 py-1 rounded-full bg-yns-emeraldSoft text-yns-emeraldDark border border-emerald-200">0 kata</span>
+              <span id="stat-read-time" class="px-2.5 py-1 rounded-full bg-yns-goldSoft text-yns-gold border border-amber-200">~1 mnt baca</span>
+            </div>
+          </div>
+
+          <!-- ============================================================= -->
+          <!-- TAB 1: EDITOR & PRATINJAU INTERAKTIF                          -->
+          <!-- ============================================================= -->
+          <div id="tab-panel-editor" class="studio-tab-panel space-y-4">
+
+            <!-- Pemilih 3 Alternatif Headline -->
+            <div class="bg-white rounded-2xl border border-yns-border p-5 shadow-sm space-y-3">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-yns-gold">Pilih 3 Alternatif Headline Aktif</span>
+                <span id="stat-headline-chars" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">0 karakter (ideal 45–75)</span>
+              </div>
+              <div id="headline-options-list" class="grid grid-cols-1 gap-2">
+                <!-- Di-render dinamis -->
+              </div>
+            </div>
+
+            <!-- Kartu Audit Bahasa (EYD V & KBBI) Collapsible -->
+            <div class="bg-white rounded-2xl border border-amber-200 shadow-sm overflow-hidden">
+              <button type="button" onclick="toggleAuditCard()" class="w-full px-5 py-3.5 bg-yns-goldSoft/80 hover:bg-yns-goldSoft flex items-center justify-between gap-3 text-left transition-colors">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-8 h-8 rounded-xl bg-yns-goldBright text-white flex items-center justify-center shrink-0 shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </span>
+                  <div>
+                    <div class="text-xs font-bold text-yns-gold uppercase tracking-wider">Audit Bahasa (EYD V &amp; KBBI)</div>
+                    <p class="text-[11px] text-amber-900/80">Catatan penyuntingan ejaan, diksi baku, &amp; struktur jurnalistik oleh AI</p>
+                  </div>
+                </div>
+                <svg id="audit-chevron" class="w-4 h-4 text-yns-gold transition-transform rotate-180 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <div id="audit-card-body" class="px-5 py-4 bg-white border-t border-amber-100">
+                <ul id="eyd-notes-list" class="space-y-2 text-xs sm:text-sm text-slate-700">
+                  <!-- Di-render dinamis -->
+                </ul>
+              </div>
+            </div>
+
+            <!-- Kanvas Editor Interaktif (Notion / Medium Style) -->
+            <div class="bg-white rounded-2xl border border-yns-border p-5 sm:p-8 shadow-sm space-y-6">
+              <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div class="flex items-center gap-2">
+                  <span id="editor-kategori-badge" class="px-2.5 py-1 rounded-md bg-yns-emerald text-white text-[11px] font-bold uppercase tracking-wider"></span>
+                  <span id="editor-date-label" class="text-xs text-slate-500 font-medium"></span>
+                </div>
+                <span class="text-[11px] text-slate-400 font-medium hidden sm:inline">Klik blok teks mana saja untuk menyunting</span>
+              </div>
+
+              <!-- Blok Judul Aktif Editable -->
+              <div class="space-y-1.5">
+                <span class="inline-block text-[10px] font-extrabold uppercase tracking-widest text-slate-400">HEADLINE UTAMA</span>
+                <h2 id="ed-headline" contenteditable="true" oninput="onEditorBlockInput()" class="font-serif font-black text-2xl sm:text-3xl text-yns-emeraldDark leading-snug rounded-xl p-2 -m-2 hover:bg-slate-50 focus:bg-yns-emeraldTint/60 focus:outline-none focus:ring-2 focus:ring-yns-emerald/30 transition-all"></h2>
+              </div>
+
+              <!-- Blok Teras Berita (Lead) -->
+              <div class="rounded-2xl border border-emerald-200/80 bg-yns-emeraldTint/50 p-4 sm:p-5 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-yns-emerald text-white text-[10px] font-extrabold uppercase tracking-wider">
+                    TERAS BERITA (LEAD)
+                  </span>
+                  <span id="lead-word-pill" class="text-[11px] font-bold text-yns-emeraldDark">0 kata</span>
+                </div>
+                <p id="ed-lead" contenteditable="true" oninput="onEditorBlockInput()" class="text-sm sm:text-base font-semibold text-slate-900 leading-relaxed rounded-lg p-1.5 -m-1.5 focus:bg-white focus:outline-none focus:ring-2 focus:ring-yns-emerald/30 transition-all"></p>
+              </div>
+
+              <!-- Blok Tubuh Berita (Body) -->
+              <div class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 space-y-2.5">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-slate-800 text-white text-[10px] font-extrabold uppercase tracking-wider">
+                  TUBUH BERITA (BODY)
+                </span>
+                <div id="ed-body" contenteditable="true" oninput="onEditorBlockInput()" class="space-y-3.5 text-sm sm:text-base text-slate-800 leading-relaxed rounded-lg p-1.5 -m-1.5 focus:bg-slate-50/70 focus:outline-none focus:ring-2 focus:ring-yns-emerald/30 transition-all"></div>
+              </div>
+
+              <!-- Blok Kutipan Narasumber -->
+              <div id="ed-quote-wrapper" class="rounded-2xl border-l-4 border-yns-emerald bg-yns-emeraldTint p-4 sm:p-5 space-y-2.5 shadow-sm">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-white text-yns-emeraldDark border border-emerald-200 text-[10px] font-extrabold uppercase tracking-wider">
+                  KUTIPAN NARASUMBER
+                </span>
+                <blockquote id="ed-quote-text" contenteditable="true" oninput="onEditorBlockInput()" class="font-serif italic text-base sm:text-lg text-yns-emeraldDark leading-relaxed rounded-lg p-1 -m-1 focus:bg-white focus:outline-none focus:ring-2 focus:ring-yns-emerald/30"></blockquote>
+                <div class="flex flex-wrap items-center gap-1.5 text-xs sm:text-sm font-bold text-yns-emerald pt-1">
+                  <span>—</span>
+                  <span id="ed-quote-speaker" contenteditable="true" oninput="onEditorBlockInput()" class="px-1 rounded focus:bg-white focus:outline-none focus:ring-2 focus:ring-yns-emerald/30"></span>
+                  <span class="text-slate-400 font-normal">,</span>
+                  <span id="ed-quote-role" contenteditable="true" oninput="onEditorBlockInput()" class="font-medium text-slate-600 px-1 rounded focus:bg-white focus:outline-none focus:ring-2 focus:ring-yns-emerald/30"></span>
+                </div>
+              </div>
+
+              <!-- Blok Ekor Berita (Tail) -->
+              <div class="rounded-2xl border border-amber-200/80 bg-yns-goldSoft/50 p-4 sm:p-5 space-y-2">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-yns-gold text-white text-[10px] font-extrabold uppercase tracking-wider">
+                  EKOR BERITA (TAIL)
+                </span>
+                <p id="ed-tail" contenteditable="true" oninput="onEditorBlockInput()" class="text-sm sm:text-base text-slate-800 leading-relaxed rounded-lg p-1.5 -m-1.5 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all"></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============================================================= -->
+          <!-- TAB 2: PRATINJAU PORTAL YNS.OR.ID                             -->
+          <!-- ============================================================= -->
+          <div id="tab-panel-portal" class="studio-tab-panel hidden">
+            <article class="bg-white rounded-2xl border border-yns-border shadow-sm overflow-hidden">
+              <!-- Header Simulasi Portal yns.or.id -->
+              <div class="bg-yns-emeraldDark text-white px-6 py-4 flex items-center justify-between border-b-4 border-yns-goldBright">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center font-serif font-black text-amber-300">Y</div>
+                  <div>
+                    <div class="font-serif font-black text-sm tracking-wide leading-none">YNS<span class="text-amber-300">.OR.ID</span></div>
+                    <div class="text-[10px] text-emerald-200 uppercase tracking-widest mt-0.5">Yayasan Nashirus Sunnah Purbalingga</div>
+                  </div>
+                </div>
+                <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/10 text-emerald-100">Live Preview</span>
+              </div>
+
+              <!-- Konten Baca Bersih -->
+              <div id="portal-preview-render" class="p-6 sm:p-10 space-y-5">
+                <!-- Di-render dinamis dari state editor -->
+              </div>
+            </article>
+          </div>
+
+          <!-- ============================================================= -->
+          <!-- TAB 3: KODE HTML WORDPRESS                                    -->
+          <!-- ============================================================= -->
+          <div id="tab-panel-html" class="studio-tab-panel hidden">
+            <div class="bg-slate-900 text-slate-100 rounded-2xl border border-slate-800 shadow-sm overflow-hidden">
+              <div class="px-5 py-3.5 bg-slate-950 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Siap Tempel ke WordPress (Gutenberg Custom HTML / Classic Text)</span>
+                  <div class="text-xs text-slate-400 mt-0.5">Menggunakan inline styling ringan agar langsung rapi di tema yns.or.id</div>
+                </div>
+                <button type="button" onclick="copyWordPressHtml()" class="px-3.5 py-1.5 rounded-lg bg-yns-emerald hover:bg-emerald-600 text-white text-xs font-bold transition-all">
+                  Salin Kode HTML
+                </button>
+              </div>
+              <pre class="p-5 text-xs font-mono leading-relaxed overflow-x-auto max-h-[540px] text-emerald-200"><code id="html-code-preview"></code></pre>
+            </div>
+          </div>
+
+          <!-- Toolbar Aksi Bawah Panel Kanan -->
+          <div class="bg-white rounded-2xl border border-yns-border p-4 shadow-sm flex flex-wrap items-center gap-2.5">
+            <button type="button" onclick="copyWordPressHtml()" class="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-yns-emeraldDark hover:bg-yns-emerald text-white text-xs font-bold shadow-sm transition-all active:scale-95">
+              <svg class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+              </svg>
+              <span>Salin HTML WordPress</span>
+            </button>
+
+            <button type="button" onclick="copyWhatsAppText()" class="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-yns-gold hover:bg-yns-goldBright text-white text-xs font-bold shadow-sm transition-all active:scale-95">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              <span>Salin Teks (WhatsApp)</span>
+            </button>
+
+            <button type="button" onclick="regenerateVariation()" class="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-yns-emeraldDark text-xs font-bold transition-all active:scale-95">
+              <svg class="w-4 h-4 text-yns-emerald" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span>Generate Ulang</span>
+            </button>
+
+            <button type="button" onclick="saveCurrentToHistoryManual()" class="flex-1 sm:flex-none sm:ml-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-yns-emeraldSoft hover:bg-emerald-100 text-yns-emeraldDark border border-emerald-200 text-xs font-bold transition-all active:scale-95">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+              </svg>
+              <span>Simpan ke Riwayat</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="border-t border-yns-border bg-white py-5 mt-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+      <p><strong class="text-yns-emeraldDark">YNS Media Studio</strong> — AI Redaksi &amp; Editor EYD V • Yayasan Nashirus Sunnah Purbalingga (<span class="text-yns-emerald font-semibold">yns.or.id</span>)</p>
+      <p>Ditenagai Gemini AI untuk penyuntingan ejaan baku &amp; kaidah Piramida Terbalik.</p>
+    </div>
+  </footer>
+
+  <!-- ==================== MODAL: PENGATURAN API KEY (OPSIONAL) ==================== -->
+  <div id="modal-api" class="fixed inset-0 z-50 hidden bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-yns-gold">Konfigurasi Gemini API</span>
+          <h3 class="font-serif font-bold text-lg text-yns-emeraldDark">Pengaturan API Key (Opsional)</h3>
+        </div>
+        <button type="button" onclick="closeModal('modal-api')" class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700" aria-label="Tutup">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-600 leading-relaxed">
+        Di dalam pratinjau ini, koneksi <strong>Gemini AI</strong> sudah aktif otomatis tanpa perlu mengisi API Key. Kolom di bawah ini hanya diperlukan jika kamu mengunduh file HTML ini dan menjalankannya secara mandiri di luar pratinjau (misal di GitHub Pages/Vercel).
+      </p>
+
+      <div class="p-3.5 rounded-xl bg-yns-emeraldSoft/70 border border-emerald-200 text-[11px] text-yns-emeraldDark space-y-1">
+        <div class="font-bold">Cara Mendapatkan API Key Gratis:</div>
+        <ol class="list-decimal list-inside space-y-0.5 text-slate-700">
+          <li>Buka <strong>aistudio.google.com</strong> dan masuk dengan akun Google.</li>
+          <li>Klik <strong>Get API key</strong> → <strong>Create API key</strong>.</li>
+          <li>Tempel kodenya di bawah ini (tersimpan lokal di browser Anda).</li>
+        </ol>
+      </div>
+
+      <div class="space-y-1.5">
+        <label for="input-custom-api-key" class="block text-xs font-bold text-slate-700">Gemini API Key Mandiri</label>
+        <input type="password" id="input-custom-api-key" placeholder="Kosongkan untuk menggunakan koneksi bawaan..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-mono focus:ring-2 focus:ring-yns-emerald/20 focus:border-yns-emerald outline-none" />
+      </div>
+
+      <div class="flex gap-2 pt-1">
+        <button type="button" onclick="clearCustomApiKey()" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 font-bold text-xs transition-all">
+          Reset Bawaan
+        </button>
+        <button type="button" onclick="saveCustomApiKey()" class="flex-1 py-2.5 rounded-xl bg-yns-emerald hover:bg-yns-emeraldDark text-white font-bold text-xs transition-all">
+          Simpan Pengaturan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== DRAWER: RIWAYAT ARTIKEL (MAKS. 20) ==================== -->
+  <div id="drawer-history" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex justify-end">
+    <div class="bg-white w-full max-w-md h-full shadow-2xl flex flex-col border-l border-slate-200">
+      <div class="px-5 py-4 bg-yns-emeraldDark text-white flex items-center justify-between border-b-4 border-yns-goldBright">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-amber-300">Arsip LocalStorage (Maks. 20)</span>
+          <h3 class="font-serif font-bold text-base sm:text-lg">Riwayat Artikel YNS (<span id="drawer-history-count">0</span>)</h3>
+        </div>
+        <button type="button" onclick="closeHistoryDrawer()" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors" aria-label="Tutup Riwayat">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div id="history-list" class="flex-1 overflow-y-auto p-4 space-y-3 bg-yns-bg">
+        <!-- Di-render dinamis -->
+      </div>
+
+      <div class="px-5 py-3.5 bg-white border-t border-slate-200 flex items-center justify-between gap-2">
+        <button type="button" id="btn-clear-history" onclick="clearAllHistory()" class="text-xs font-bold text-red-600 hover:text-red-700 transition-colors">
+          Hapus Semua Riwayat
+        </button>
+        <button type="button" onclick="closeHistoryDrawer()" class="px-4 py-2 rounded-xl bg-yns-emeraldDark hover:bg-yns-emerald text-white text-xs font-bold transition-all">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== JAVASCRIPT APPLICATION LOGIC ==================== -->
+  <script>
+    /**
+     * =========================================================================
+     * YNS Media Studio — AI Redaksi & Editor EYD V
+     * Menggunakan Gemini API (gemini-3-flash-preview) dengan Structured JSON Output
+     * serta Exponential Backoff untuk keandalan tinggi.
+     * =========================================================================
+     */
+    const DEFAULT_API_KEY = ""; // Dibiarkan kosong agar otomatis disediakan runtime Canvas/Preview
+    const GEMINI_MODEL = "gemini-3-flash-preview";
+
+    const STORAGE_KEYS = {
+      CUSTOM_API_KEY: 'yns_eyd_custom_api_key_v1',
+      HISTORY: 'yns_eyd_history_v1'
+    };
+
+    // Contoh catatan lapangan santai (sengaja mengandung typo/EYD belum rapi untuk membuktikan kinerja AI)
+    const QUICK_EXAMPLES = {
+      'Kajian Islam & Dakwah': {
+        apa: 'kajian rutin ahad pagi ttg menjaga keikhlasan dlm menuntut ilmu & beramal',
+        siapa: 'yayasan nashirus sunnah purbalingga, pemateri ustadz ahmad fauzi lc, dihadiri sktr 180 jamaah muslimin muslimat',
+        kapan: 'ahad tgl 22 nov 2026 jam 08.00 - 10.00 wib',
+        dimana: 'dimasjid griya belajar purbalingga',
+        mengapa: 'biar jamaah paham klo niat ikhlas itu pondasi utama dlm aktifitas ibadah & muamalah sehari2',
+        bagaimana: 'acara dibuka dgn tilawah quran, lalu pemateri jelasin 3 tanda keikhlasan dan bahaya riya. banyak jamaah yg aktif nanya pas sesi tanya jawab, trs ditutup ramah tamah.',
+        quoteSpeaker: 'Ustadz Ahmad Fauzi, Lc.',
+        quoteRole: 'Pembina Yayasan Nashirus Sunnah Purbalingga',
+        quoteText: 'keikhlasan itu ruh nya amal sholeh, kalo niat gak lurus krn Allah maka amalan sebesar apapun jd hilang berkahnya',
+        ekorInfo: 'insyaallah kajian rutin berikutnya tetap diadakan ahad depan jam 8 pagi ditempat yg sama, terbuka utk umum.'
+      },
+      'Laporan Donasi & Sosial': {
+        apa: 'penyaluran paket sembako dan santunan yatim dhuafa program peduli sesama tahap 4',
+        siapa: 'divisi sosial yayasan nashirus sunnah purbalingga bersama 25 relawan, penerima 125 keluarga dhuafa & 40 anak yatim',
+        kapan: 'sabtu tgl 21 nov 2026 mulai jam 09.00 wib',
+        dimana: 'dikantor sekretariat yayasan nashirus sunnah purbalingga & langsung kerumah warga',
+        mengapa: 'utk meringankan beban ekonomi warga kurang mampu sekaligus menyalurkan amanah para donatur secara transparan',
+        bagaimana: 'total dana yg disalurkan mencapai 37,5 juta rupiah. paket berisi beras, minyak goreng, gula & kebutuhan pokok lainnya. relawan antar langsung door to door biar tepat sasaran.',
+        quoteSpeaker: 'Hendra Wijaya',
+        quoteRole: 'Koordinator Divisi Sosial YNS Purbalingga',
+        quoteText: 'alhamdulillah amanah dr para muhsinin sdh kami salurkan semua, smg jd pemberat amal kebaikan dan hartanya makin berkah',
+        ekorInfo: 'bagi yg mau ikut program donasi bulan depan bs transfer ke BSI 7123456789 a.n. Yayasan Nashirus Sunnah Purbalingga, konfirmasi WA 0812-3456-7890.'
+      },
+      'Kegiatan Yayasan': {
+        apa: 'rapat kerja tahunan & evaluasi program dakwah sosial thn 2027',
+        siapa: '35 pengurus harian, pengajar, serta koordinator divisi yayasan nashirus sunnah purbalingga',
+        kapan: 'sabtu 21 nov 2026 jam 08.30 s/d 15.00 wib',
+        dimana: 'diaula yayasan nashirus sunnah purbalingga',
+        mengapa: 'utk meningkatkan kwalitas pelayanan dakwah, pendidikan & transparansi laporan digital di web yns.or.id',
+        bagaimana: 'tiap divisi paparkan laporan evaluasi 2026, trs susun kalender kajian tematik, baksos, dan penguatan media dakwah digital biar jangkauan manfaatnya makin luas.',
+        quoteSpeaker: 'Ustadz Muhammad Ridwan',
+        quoteRole: 'Ketua Yayasan Nashirus Sunnah Purbalingga',
+        quoteText: 'sinergi antar divisi itu kunci utama biar program yayasan makin rapi, amanah dan dirasakan manfaatnya sm masyarakat purbalingga',
+        ekorInfo: 'info lengkap agenda bulanan yayasan bisa dipantau terus lewat website resmi yns.or.id.'
+      },
+      'Pendidikan & Pelatihan': {
+        apa: 'pelatihan tahsin alquran dan pembinaan adab islami bagi murid griya belajar',
+        siapa: '95 murid tingkat dasar dan menengah beserta pengajar pendamping dari bidang pendidikan yns purbalingga',
+        kapan: 'ahad 22 nov 2026 pukul 08.00 sampai 11.30 wib',
+        dimana: 'digriya belajar yayasan nashirus sunnah purbalingga',
+        mengapa: 'utk memperbaiki kwalitas bacaan alquran murid sesuai tajwid sekaligus membentuk karakter berakhlak mulia',
+        bagaimana: 'murid dibagi dlm kelompok kecil isi 8 org biar praktek makharijul huruf dan tajwidnya bisa dievaluasi langsung oleh pengajar. suasana belajar sangat kondusif & semangat.',
+        quoteSpeaker: 'Ustadz Salman Al-Farisi',
+        quoteRole: 'Koordinator Bidang Pendidikan YNS Purbalingga',
+        quoteText: 'kami pengen cetak generasi murid yg gak cuma fasih baca alquran tp jg bagus adabnya dikehidupan sehari hari',
+        ekorInfo: 'pendaftaran kelas tahsin gelombang baru msh dibuka sampai akhir bulan ini lewat admin pendidikan di yns.or.id.'
+      },
+      'Pengumuman Resmi': {
+        apa: 'pembukaan pendaftaran dauroh ilmu syari gratis & santunan akhir tahun 2026',
+        siapa: 'pengurus harian yayasan nashirus sunnah purbalingga, terbuka utk masyarakat umum dan murid binaan',
+        kapan: 'pendaftaran mulai senin 23 nov sampai 10 des 2026',
+        dimana: 'pendaftaran online di web yns.or.id atau langsung kesekretariat yns purbalingga',
+        mengapa: 'memberi kesempatan masyarakat luas buat belajar agama secara terstruktur tanpa dipungut biaya sepeserpun',
+        bagaimana: 'kuota peserta dibatasi cuma 200 org saja. peserta yg sdh daftar online wajib konfirmasi ke admin & daftar ulang 1 jam sblm acara mulai.',
+        quoteSpeaker: 'Pengurus Harian',
+        quoteRole: 'Yayasan Nashirus Sunnah Purbalingga',
+        quoteText: 'kami menghimbau warga yg berminat agar segera daftar krn kuota ruangan terbatas',
+        ekorInfo: 'formulir pendaftaran dan jadwal lengkap dauroh bisa dilihat langsung di portal resmi yns.or.id.'
+      }
+    };
+
+    // State Runtime
+    let currentArticle = null;
+    let activeStudioTab = 'editor';
+    let isOptionalOpen = false;
+    let isAuditOpen = true;
+    let loadingTimer = null;
+
+    // ==================== HELPER: LOCALSTORAGE & TOAST ====================
+    function safeGetStorage(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch (err) {
+        return fallback;
+      }
+    }
+
+    function safeSetStorage(key, value) {
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+      } catch (err) {
+        console.error('Gagal menyimpan localStorage:', err);
+      }
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const styles = {
+        success: 'bg-yns-emerald text-white border-yns-emeraldDark',
+        error: 'bg-red-600 text-white border-red-700',
+        info: 'bg-yns-emeraldDark text-white border-emerald-900'
+      };
+      toast.className = `pointer-events-auto px-4 py-3 rounded-xl shadow-lg border text-xs sm:text-sm font-semibold transition-all duration-300 ${styles[type] || styles.info}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3200);
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text || '';
+      return div.innerHTML;
+    }
+
+    function countWords(text) {
+      const cleaned = (text || '').trim();
+      return cleaned ? cleaned.split(/\s+/).filter(Boolean).length : 0;
+    }
+
+    function formatDateTodayID() {
+      const now = new Date();
+      const days = ['Ahad', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+      const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+      return `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+    }
+
+    // Salin teks aman untuk iframe menggunakan document.execCommand('copy')
+    function copyToClipboard(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.top = '-9999px';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      let ok = false;
+      try {
+        ok = document.execCommand('copy');
+      } catch (e) {
+        ok = false;
+      }
+      document.body.removeChild(ta);
+      return ok;
+    }
+
+    // ==================== INPUT FORM & PROGRES 5W+1H ====================
+    function update5W1HProgress() {
+      const ids = ['in-apa', 'in-siapa', 'in-kapan', 'in-dimana', 'in-mengapa', 'in-bagaimana'];
+      let filled = 0;
+      ids.forEach(id => {
+        if ((document.getElementById(id).value || '').trim().length > 0) filled++;
+      });
+      const pct = Math.round((filled / ids.length) * 100);
+      document.getElementById('progress-5w1h-label').textContent = `${pct}% (${filled}/6)`;
+      const bar = document.getElementById('progress-5w1h-bar');
+      bar.style.width = `${pct}%`;
+      bar.className = `h-full rounded-full transition-all duration-300 ${pct === 100 ? 'bg-yns-emerald' : pct >= 50 ? 'bg-yns-goldBright' : 'bg-slate-400'}`;
+    }
+
+    function toggleOptionalSection(forceOpen = null) {
+      isOptionalOpen = forceOpen !== null ? forceOpen : !isOptionalOpen;
+      const body = document.getElementById('optional-section-body');
+      const chevron = document.getElementById('optional-chevron');
+      if (isOptionalOpen) {
+        body.classList.remove('hidden');
+        chevron.classList.add('rotate-180');
+      } else {
+        body.classList.add('hidden');
+        chevron.classList.remove('rotate-180');
+      }
+    }
+
+    function fillQuickExample() {
+      const kategori = document.getElementById('in-kategori').value;
+      const sample = QUICK_EXAMPLES[kategori] || QUICK_EXAMPLES['Kajian Islam & Dakwah'];
+
+      document.getElementById('in-apa').value = sample.apa;
+      document.getElementById('in-siapa').value = sample.siapa;
+      document.getElementById('in-kapan').value = sample.kapan;
+      document.getElementById('in-dimana').value = sample.dimana;
+      document.getElementById('in-mengapa').value = sample.mengapa;
+      document.getElementById('in-bagaimana').value = sample.bagaimana;
+      document.getElementById('in-quote-speaker').value = sample.quoteSpeaker;
+      document.getElementById('in-quote-role').value = sample.quoteRole;
+      document.getElementById('in-quote-text').value = sample.quoteText;
+      document.getElementById('in-ekor-info').value = sample.ekorInfo;
+
+      toggleOptionalSection(true);
+      update5W1HProgress();
+      showToast(`Contoh catatan mentah "${kategori}" diisi. Klik Generate untuk melihat AI merapikan EYD-nya!`, 'info');
+    }
+
+    function resetForm() {
+      document.getElementById('form-5w1h').reset();
+      update5W1HProgress();
+      showToast('Formulir 5W+1H telah dikosongkan.', 'info');
+    }
+
+    function getFormInputData() {
+      return {
+        kategori: document.getElementById('in-kategori').value,
+        gaya: document.getElementById('in-gaya').value,
+        apa: document.getElementById('in-apa').value.trim(),
+        siapa: document.getElementById('in-siapa').value.trim(),
+        kapan: document.getElementById('in-kapan').value.trim(),
+        dimana: document.getElementById('in-dimana').value.trim(),
+        mengapa: document.getElementById('in-mengapa').value.trim(),
+        bagaimana: document.getElementById('in-bagaimana').value.trim(),
+        quoteSpeaker: document.getElementById('in-quote-speaker').value.trim(),
+        quoteRole: document.getElementById('in-quote-role').value.trim(),
+        quoteText: document.getElementById('in-quote-text').value.trim(),
+        ekorInfo: document.getElementById('in-ekor-info').value.trim()
+      };
+    }
+
+    // ==================== ANIMASI LOADING BERTAHAP ====================
+    function startLoadingStages() {
+      document.getElementById('studio-empty').classList.add('hidden');
+      document.getElementById('studio-result').classList.add('hidden');
+      document.getElementById('studio-loading').classList.remove('hidden');
+
+      const stages = [
+        { step: 1, text: '1. Menganalisis struktur dan kelengkapan 5W+1H...' },
+        { step: 2, text: '2. Menyunting ejaan sesuai EYD V & diksi baku KBBI...' },
+        { step: 3, text: '3. Menyusun Piramida Terbalik & format portal yns.or.id...' }
+      ];
+
+      let idx = 0;
+      const applyStage = (s) => {
+        document.getElementById('loading-stage-text').textContent = s.text;
+        [1, 2, 3].forEach(num => {
+          const pill = document.getElementById(`stage-pill-${num}`);
+          if (num <= s.step) {
+            pill.className = 'px-2.5 py-2 rounded-xl bg-yns-emeraldSoft text-yns-emeraldDark border border-emerald-200 transition-all';
+          } else {
+            pill.className = 'px-2.5 py-2 rounded-xl bg-slate-100 text-slate-400 border border-slate-200 transition-all';
+          }
+        });
+      };
+
+      applyStage(stages[0]);
+      clearInterval(loadingTimer);
+      loadingTimer = setInterval(() => {
+        idx = (idx + 1) % stages.length;
+        applyStage(stages[idx]);
+      }, 1400);
+    }
+
+    function stopLoadingStages(showResult) {
+      clearInterval(loadingTimer);
+      document.getElementById('studio-loading').classList.add('hidden');
+      if (showResult) {
+        document.getElementById('studio-result').classList.remove('hidden');
+      } else if (!currentArticle) {
+        document.getElementById('studio-empty').classList.remove('hidden');
+      } else {
+        document.getElementById('studio-result').classList.remove('hidden');
+      }
+    }
+
+    // ==================== INTEGRASI GEMINI AI (STRUCTURED JSON + BACKOFF) ====================
+    async function fetchGeminiWithBackoff(url, payload, maxRetries = 4) {
+      let delay = 1000;
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          if (response.ok) {
+            return await response.json();
+          }
+
+          // Retry pada status throttling (429) atau server error sementara (5xx)
+          if ((response.status === 429 || response.status >= 500) && attempt < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, delay));
+            delay *= 2;
+            continue;
+          }
+
+          const errBody = await response.text();
+          throw new Error(`HTTP ${response.status}: ${errBody.slice(0, 150)}`);
+        } catch (err) {
+          if (attempt < maxRetries && !String(err.message || '').startsWith('HTTP 400') && !String(err.message || '').startsWith('HTTP 403')) {
+            await new Promise(resolve => setTimeout(resolve, delay));
+            delay *= 2;
+            continue;
+          }
+          throw err;
+        }
+      }
+    }
+
+    async function callGeminiRedaksi(data, isVariation = false) {
+      const customKey = (safeGetStorage(STORAGE_KEYS.CUSTOM_API_KEY, '') || '').trim();
+      const activeKey = customKey || DEFAULT_API_KEY;
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(activeKey)}`;
+
+      const systemPrompt = `Anda adalah Pemimpin Redaksi dan Editor Bahasa Indonesia senior (ahli EYD V dan KBBI VI) untuk portal berita resmi Yayasan Nashirus Sunnah Purbalingga (yns.or.id).
+
+TUGAS UTAMA:
+1. Tulis ulang seluruh catatan lapangan mentah 5W+1H menjadi artikel berita/dakwah yang jernih, santun, berwibawa, akurat, dan mengalir alami.
+2. SUNTING KETAT SESUAI EYD V & KBBI BAKU:
+   - Perbaiki seluruh typo, singkatan tidak baku (dgn, tgl, utk, yg, sdh, klo, krn, trs, tp, jd, smg, dll.), dan kata tidak baku (aktifitas -> aktivitas, kwalitas -> kualitas, sekedar -> sekadar, praktek -> praktik, himbau -> imbau, sholeh -> saleh, nanya -> bertanya, jelasin -> menjelaskan, dll.).
+   - Perbaiki penulisan kata depan di- dan ke- yang menunjukkan tempat (dimasjid -> di masjid, kerumah -> ke rumah, dikantor -> di kantor, diaula -> di aula, digriya -> di Griya).
+   - Perbaiki penggunaan huruf kapital, tanda baca, dan kalimat efektif (SPOK jelas, bebas kalimat bertele-tele).
+   - Jika menyebut peserta didik/pelajar, WAJIB gunakan kata "murid" (JANGAN pernah gunakan kata "siswa").
+3. TERAPKAN KAIDAH JURNALISTIK PIRAMIDA TERBALIK:
+   - headlines: Tepat 3 alternatif judul berita aktif, spesifik, bebas clickbait, panjang ideal 45–75 karakter.
+   - lead: Teras berita 1–2 kalimat padat (15–35 kata) yang memuat unsur utama (Siapa, Apa, Kapan, Di mana) dan WAJIB diawali dateline persis: "PURBALINGGA, yns.or.id — "
+   - bodyParagraphs: 2 hingga 4 paragraf tubuh berita yang menjelaskan unsur Mengapa & Bagaimana secara runtut dan objektif.
+   - quote: Jika input kutipan diisi, rapikan ejaan dan tanda bacanya tanpa mengubah makna asli narasumber. Jika input kutipan kosong, isi text, speaker, dan role dengan string kosong "".
+   - tail: Ekor berita berisi informasi tambahan, harapan, jadwal/info donasi jika ada, serta penutup santun khas Yayasan Nashirus Sunnah Purbalingga (misal Jazakumullahu khairan atau doa keberkahan bila relevan).
+   - eydNotes: 3–4 poin konkret dan spesifik yang menjelaskan perbaikan EYD V, KBBI, dan struktur kalimat yang benar-benar Anda lakukan dari teks mentah pengguna.`;
+
+      const userPrompt = `Susun artikel berita kategori "${data.kategori}" dengan gaya bahasa "${data.gaya}".${isVariation ? ' Buat variasi sudut pandang judul dan susunan kalimat yang berbeda namun tetap setia pada fakta.' : ''}
+
+DATA CATATAN LAPANGAN MENTAH (5W+1H):
+- APA (What): ${data.apa}
+- SIAPA (Who): ${data.siapa}
+- KAPAN (When): ${data.kapan}
+- DI MANA (Where): ${data.dimana}
+- MENGAPA (Why): ${data.mengapa || '(tidak disebutkan secara khusus)'}
+- BAGAIMANA (How): ${data.bagaimana || '(tidak disebutkan secara khusus)'}
+- KUTIPAN NARASUMBER MENTAH: ${data.quoteText ? `Nama: ${data.quoteSpeaker || '-'} | Jabatan: ${data.quoteRole || '-'} | Isi: ${data.quoteText}` : '(tidak ada kutipan)'}
+- INFO TAMBAHAN / EKOR / DONASI: ${data.ekorInfo || '(tidak ada info tambahan khusus)'}`;
+
+      const payload = {
+        contents: [{ parts: [{ text: userPrompt }] }],
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        generationConfig: {
+          temperature: isVariation ? 0.85 : 0.6,
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: 'OBJECT',
+            properties: {
+              headlines: {
+                type: 'ARRAY',
+                items: { type: 'STRING' }
+              },
+              lead: { type: 'STRING' },
+              bodyParagraphs: {
+                type: 'ARRAY',
+                items: { type: 'STRING' }
+              },
+              quote: {
+                type: 'OBJECT',
+                properties: {
+                  text: { type: 'STRING' },
+                  speaker: { type: 'STRING' },
+                  role: { type: 'STRING' }
+                },
+                required: ['text', 'speaker', 'role']
+              },
+              tail: { type: 'STRING' },
+              eydNotes: {
+                type: 'ARRAY',
+                items: { type: 'STRING' }
+              }
+            },
+            required: ['headlines', 'lead', 'bodyParagraphs', 'quote', 'tail', 'eydNotes']
+          }
+        }
+      };
+
+      const result = await fetchGeminiWithBackoff(apiUrl, payload);
+      const rawJson = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!rawJson) throw new Error('Respons AI kosong.');
+
+      const parsed = JSON.parse(rawJson);
+
+      // Pastikan dateline selalu sesuai standar yns.or.id
+      let lead = (parsed.lead || '').trim();
+      if (!lead.startsWith('PURBALINGGA, yns.or.id')) {
+        lead = `PURBALINGGA, yns.or.id — ${lead}`;
+      }
+
+      return {
+        id: `YNS-${Date.now()}`,
+        kategori: data.kategori,
+        gaya: data.gaya,
+        date: formatDateTodayID(),
+        headlines: Array.isArray(parsed.headlines) && parsed.headlines.length ? parsed.headlines.slice(0, 3) : ['Berita Yayasan Nashirus Sunnah Purbalingga'],
+        selectedHeadlineIndex: 0,
+        activeHeadline: (parsed.headlines && parsed.headlines[0]) || 'Berita Yayasan Nashirus Sunnah Purbalingga',
+        lead,
+        bodyParagraphs: Array.isArray(parsed.bodyParagraphs) ? parsed.bodyParagraphs : [],
+        quote: parsed.quote || { text: '', speaker: '', role: '' },
+        tail: (parsed.tail || '').trim(),
+        eydNotes: Array.isArray(parsed.eydNotes) ? parsed.eydNotes : []
+      };
+    }
+
+    // ==================== KONTROLER GENERATE ====================
+    async function handleGenerateSubmit(event) {
+      event.preventDefault();
+      await executeGenerate(false);
+    }
+
+    async function regenerateVariation() {
+      await executeGenerate(true);
+    }
+
+    async function executeGenerate(isVariation) {
+      const data = getFormInputData();
+      if (!data.apa || !data.siapa || !data.kapan || !data.dimana) {
+        showToast('Mohon lengkapi minimal kolom APA, SIAPA, KAPAN, dan DI MANA.', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('btn-generate');
+      const btnText = document.getElementById('btn-generate-text');
+      btn.disabled = true;
+      btnText.textContent = 'Sedang Menyunting dengan AI...';
+      startLoadingStages();
+
+      try {
+        const article = await callGeminiRedaksi(data, isVariation);
+        currentArticle = article;
+        renderStudioAll(article);
+        saveArticleToHistory(article, false);
+        stopLoadingStages(true);
+        switchStudioTab('editor');
+        showToast(
+          isVariation ? 'Variasi artikel baru & audit EYD berhasil dibuat!' : 'Artikel berhasil dirakit & disunting sesuai EYD V!',
+          'success'
+        );
+      } catch (err) {
+        console.error('Error Gemini API:', err);
+        stopLoadingStages(false);
+        showToast('Gagal terhubung ke Gemini AI. Cek koneksi atau masukkan API Key di menu Pengaturan API.', 'error');
+      } finally {
+        btn.disabled = false;
+        btnText.textContent = 'Generate & Perbaiki EYD dengan AI';
+      }
+    }
+
+    // ==================== RENDER STUDIO PANEL KANAN ====================
+    function renderStudioAll(article) {
+      if (!article) return;
+
+      // 1. Render 3 Alternatif Headline
+      const hList = document.getElementById('headline-options-list');
+      hList.innerHTML = '';
+      (article.headlines || []).forEach((h, idx) => {
+        const isSelected = idx === (article.selectedHeadlineIndex || 0);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.onclick = () => selectHeadlineOption(idx);
+        btn.className = `text-left px-3.5 py-2.5 rounded-xl border transition-all flex items-start gap-2.5 ${
+          isSelected
+            ? 'border-yns-emerald bg-yns-emeraldSoft text-yns-emeraldDark shadow-sm'
+            : 'border-slate-200 bg-slate-50/70 text-slate-600 hover:bg-slate-100'
+        }`;
+        btn.innerHTML = `
+          <span class="mt-0.5 w-5 h-5 rounded-full text-[11px] font-bold flex items-center justify-center shrink-0 ${
+            isSelected ? 'bg-yns-emerald text-white' : 'bg-slate-200 text-slate-600'
+          }">${idx + 1}</span>
+          <span class="font-serif font-bold text-xs sm:text-sm leading-snug">${escapeHtml(h)}</span>
+        `;
+        hList.appendChild(btn);
+      });
+
+      // 2. Render Audit Bahasa (EYD V & KBBI)
+      const notesEl = document.getElementById('eyd-notes-list');
+      notesEl.innerHTML = '';
+      if (article.eydNotes && article.eydNotes.length > 0) {
+        article.eydNotes.forEach(note => {
+          const li = document.createElement('li');
+          li.className = 'flex items-start gap-2';
+          li.innerHTML = `
+            <span class="w-1.5 h-1.5 rounded-full bg-yns-goldBright mt-2 shrink-0"></span>
+            <span>${escapeHtml(note)}</span>
+          `;
+          notesEl.appendChild(li);
+        });
+      } else {
+        notesEl.innerHTML = '<li class="text-slate-500">Ejaan dan struktur kalimat telah disesuaikan dengan EYD V dan KBBI baku.</li>';
+      }
+
+      // 3. Render Blok Kanvas Editor Interaktif
+      document.getElementById('editor-kategori-badge').textContent = article.kategori;
+      document.getElementById('editor-date-label').textContent = article.date;
+      document.getElementById('ed-headline').textContent = article.activeHeadline || article.headlines[0] || '';
+      document.getElementById('ed-lead').textContent = article.lead || '';
+
+      const bodyEl = document.getElementById('ed-body');
+      bodyEl.innerHTML = '';
+      (article.bodyParagraphs || []).forEach(pText => {
+        const p = document.createElement('p');
+        p.textContent = pText;
+        bodyEl.appendChild(p);
+      });
+
+      const quoteWrap = document.getElementById('ed-quote-wrapper');
+      if (article.quote && article.quote.text && article.quote.text.trim()) {
+        quoteWrap.classList.remove('hidden');
+        const cleanedQ = article.quote.text.trim().replace(/^["“]|["”]$/g, '');
+        document.getElementById('ed-quote-text').textContent = `"${cleanedQ}"`;
+        document.getElementById('ed-quote-speaker').textContent = article.quote.speaker || 'Narasumber';
+        document.getElementById('ed-quote-role').textContent = article.quote.role || 'Yayasan Nashirus Sunnah Purbalingga';
+      } else {
+        quoteWrap.classList.add('hidden');
+      }
+
+      document.getElementById('ed-tail').textContent = article.tail || '';
+
+      // 4. Sinkronkan statistik, Tab Portal, dan Tab HTML
+      syncMetricsAndSecondaryViews();
+    }
+
+    function selectHeadlineOption(index) {
+      if (!currentArticle || !currentArticle.headlines[index]) return;
+      currentArticle.selectedHeadlineIndex = index;
+      currentArticle.activeHeadline = currentArticle.headlines[index];
+      renderStudioAll(currentArticle);
+    }
+
+    // Dipanggil setiap kali pengguna mengedit langsung di blok contenteditable
+    function onEditorBlockInput() {
+      if (!currentArticle) return;
+
+      currentArticle.activeHeadline = document.getElementById('ed-headline').innerText.trim();
+      currentArticle.lead = document.getElementById('ed-lead').innerText.trim();
+      currentArticle.bodyParagraphs = document.getElementById('ed-body').innerText
+        .split(/\n+/)
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      if (!document.getElementById('ed-quote-wrapper').classList.contains('hidden')) {
+        currentArticle.quote = {
+          text: document.getElementById('ed-quote-text').innerText.trim().replace(/^["“]|["”]$/g, ''),
+          speaker: document.getElementById('ed-quote-speaker').innerText.trim(),
+          role: document.getElementById('ed-quote-role').innerText.trim()
+        };
+      }
+      currentArticle.tail = document.getElementById('ed-tail').innerText.trim();
+
+      syncMetricsAndSecondaryViews();
+    }
+
+    function syncMetricsAndSecondaryViews() {
+      if (!currentArticle) return;
+
+      // Hitung karakter judul
+      const hLen = (currentArticle.activeHeadline || '').length;
+      const charBadge = document.getElementById('stat-headline-chars');
+      charBadge.textContent = `${hLen} karakter (ideal 45–75)`;
+      if (hLen >= 45 && hLen <= 75) {
+        charBadge.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
+      } else if (hLen > 75) {
+        charBadge.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-red-100 text-red-700';
+      } else {
+        charBadge.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800';
+      }
+
+      // Hitung kata Lead & Total Artikel + Waktu Baca
+      const leadWords = countWords(currentArticle.lead);
+      document.getElementById('lead-word-pill').textContent = `${leadWords} kata`;
+
+      const quoteStr = currentArticle.quote && currentArticle.quote.text ? `${currentArticle.quote.text} ${currentArticle.quote.speaker} ${currentArticle.quote.role}` : '';
+      const totalWords = leadWords + countWords((currentArticle.bodyParagraphs || []).join(' ')) + countWords(quoteStr) + countWords(currentArticle.tail);
+      const readMins = Math.max(1, Math.ceil(totalWords / 200));
+
+      document.getElementById('stat-word-count').textContent = `${totalWords} kata`;
+      document.getElementById('stat-read-time').textContent = `~${readMins} mnt baca`;
+
+      // Render ulang Tab Portal yns.or.id & Tab Kode HTML WordPress
+      renderPortalPreview(currentArticle, readMins);
+      document.getElementById('html-code-preview').textContent = buildWordPressHtml(currentArticle);
+    }
+
+    function renderPortalPreview(article, readMins) {
+      const container = document.getElementById('portal-preview-render');
+      const leadHtml = formatDatelineHtml(article.lead);
+      const bodyHtml = (article.bodyParagraphs || [])
+        .map(p => `<p class="text-slate-800 leading-relaxed">${escapeHtml(p)}</p>`)
+        .join('');
+
+      const quoteHtml = article.quote && article.quote.text && article.quote.text.trim()
+        ? `
+          <blockquote class="border-l-4 border-yns-emerald bg-yns-emeraldTint px-5 py-4 rounded-r-2xl space-y-1.5 my-5">
+            <p class="font-serif italic text-base sm:text-lg text-yns-emeraldDark leading-relaxed">"${escapeHtml(article.quote.text.replace(/^["“]|["”]$/g, ''))}"</p>
+            <footer class="text-xs sm:text-sm font-bold text-yns-emerald">— ${escapeHtml(article.quote.speaker)}${article.quote.role ? `, <span class="font-medium text-slate-600">${escapeHtml(article.quote.role)}</span>` : ''}</footer>
+          </blockquote>
+        `
+        : '';
+
+      const tailHtml = article.tail
+        ? `
+          <div class="rounded-2xl bg-yns-goldSoft border border-amber-200 p-4 sm:p-5 mt-5">
+            <p class="text-sm sm:text-base text-amber-950 leading-relaxed">${escapeHtml(article.tail)}</p>
+          </div>
+        `
+        : '';
+
+      container.innerHTML = `
+        <div class="flex flex-wrap items-center gap-2 text-xs">
+          <span class="px-2.5 py-1 rounded-md bg-yns-emerald text-white font-bold uppercase tracking-wider text-[11px]">${escapeHtml(article.kategori)}</span>
+          <span class="text-slate-400">•</span>
+          <span class="text-slate-500 font-medium">${escapeHtml(article.date)}</span>
+          <span class="text-slate-400">•</span>
+          <span class="text-yns-gold font-semibold">${readMins} menit baca</span>
+        </div>
+
+        <h1 class="font-serif font-black text-2xl sm:text-3xl text-yns-emeraldDark leading-tight">
+          ${escapeHtml(article.activeHeadline)}
+        </h1>
+
+        <div class="flex items-center gap-3 py-3 border-y border-slate-200">
+          <div class="w-9 h-9 rounded-full bg-yns-emeraldDark text-amber-300 font-serif font-bold flex items-center justify-center text-xs">YNS</div>
+          <div class="text-xs">
+            <div class="font-bold text-yns-emeraldDark">Tim Media Yayasan Nashirus Sunnah Purbalingga</div>
+            <div class="text-slate-500">Portal Dakwah, Pendidikan &amp; Sosial • yns.or.id</div>
+          </div>
+        </div>
+
+        <div class="space-y-4 text-sm sm:text-base">
+          <p class="text-slate-900 leading-relaxed">${leadHtml}</p>
+          ${bodyHtml}
+          ${quoteHtml}
+          ${tailHtml}
+        </div>
+      `;
+    }
+
+    function formatDatelineHtml(leadText) {
+      const safe = escapeHtml(leadText || '');
+      const datelinePrefix = 'PURBALINGGA, yns.or.id —';
+      if (safe.startsWith(datelinePrefix)) {
+        return `<strong style="color:#064E3B;">${datelinePrefix}</strong>${safe.slice(datelinePrefix.length)}`;
+      }
+      return safe;
+    }
+
+    // Generator Kode HTML Bersih & Estetis Siap Tempel ke WordPress yns.or.id
+    function buildWordPressHtml(article) {
+      const parts = [];
+      parts.push(`<!-- Artikel Siap Tayang yns.or.id (${article.kategori}) -->`);
+      parts.push(`<div style="font-family: inherit; color: #1f2937; line-height: 1.8;">`);
+
+      // Teras Berita dengan Dateline Tebal
+      parts.push(`  <p style="font-size: 1.05em; margin-bottom: 1.2em; color: #111827;">${formatDatelineHtml(article.lead)}</p>`);
+
+      // Paragraf Tubuh Berita
+      (article.bodyParagraphs || []).forEach(p => {
+        parts.push(`  <p style="margin-bottom: 1.15em;">${escapeHtml(p)}</p>`);
+      });
+
+      // Kutipan Narasumber (Blockquote Emerald Elegan)
+      if (article.quote && article.quote.text && article.quote.text.trim()) {
+        const qText = escapeHtml(article.quote.text.trim().replace(/^["“]|["”]$/g, ''));
+        const qSpeaker = escapeHtml(article.quote.speaker || 'Narasumber');
+        const qRole = article.quote.role ? `, ${escapeHtml(article.quote.role)}` : '';
+        parts.push(`  <blockquote style="border-left: 4px solid #047857; background-color: #F0FDF4; padding: 16px 20px; margin: 1.5em 0; border-radius: 0 12px 12px 0;">`);
+        parts.push(`    <p style="font-style: italic; color: #064E3B; margin: 0 0 8px 0; font-size: 1.05em;">"${qText}"</p>`);
+        parts.push(`    <footer style="font-size: 0.9em; font-weight: 700; color: #047857;">— ${qSpeaker}<span style="font-weight: 400; color: #4b5563;">${qRole}</span></footer>`);
+        parts.push(`  </blockquote>`);
+      }
+
+      // Ekor Berita / Kotak Penutup Estetis
+      if (article.tail && article.tail.trim()) {
+        parts.push(`  <div style="background-color: #FFFBEB; border: 1px solid #FDE68A; border-left: 4px solid #D97706; padding: 14px 18px; border-radius: 10px; margin-top: 1.5em;">`);
+        parts.push(`    <p style="margin: 0; color: #78350F;">${escapeHtml(article.tail)}</p>`);
+        parts.push(`  </div>`);
+      }
+
+      parts.push(`</div>`);
+      return parts.join('\n');
+    }
+
+    // ==================== TAB SWITCHING & AUDIT COLLAPSE ====================
+    function switchStudioTab(tabName) {
+      activeStudioTab = tabName;
+      document.querySelectorAll('.studio-tab-panel').forEach(p => p.classList.add('hidden'));
+      const activePanel = document.getElementById(`tab-panel-${tabName}`);
+      if (activePanel) activePanel.classList.remove('hidden');
+
+      document.querySelectorAll('.studio-tab-btn').forEach(btn => {
+        const isSelected = btn.dataset.studioTab === tabName;
+        if (isSelected) {
+          btn.className = 'studio-tab-btn px-3 py-2 rounded-lg text-[11px] sm:text-xs font-bold bg-white text-yns-emeraldDark shadow-sm transition-all';
+        } else {
+          btn.className = 'studio-tab-btn px-3 py-2 rounded-lg text-[11px] sm:text-xs font-bold text-slate-500 hover:text-yns-emeraldDark transition-all';
+        }
+      });
+    }
+
+    function toggleAuditCard() {
+      isAuditOpen = !isAuditOpen;
+      const body = document.getElementById('audit-card-body');
+      const chevron = document.getElementById('audit-chevron');
+      if (isAuditOpen) {
+        body.classList.remove('hidden');
+        chevron.classList.add('rotate-180');
+      } else {
+        body.classList.add('hidden');
+        chevron.classList.remove('rotate-180');
+      }
+    }
+
+    // ==================== AKSI SALIN (WORDPRESS HTML & WHATSAPP) ====================
+    function copyWordPressHtml() {
+      if (!currentArticle) return;
+      const html = buildWordPressHtml(currentArticle);
+      if (copyToClipboard(html)) {
+        showToast('Kode HTML estetis disalin! Siap paste ke WordPress yns.or.id.', 'success');
+      } else {
+        showToast('Gagal menyalin HTML ke clipboard.', 'error');
+      }
+    }
+
+    function formatWhatsAppText(article) {
+      const lines = [
+        `*${article.activeHeadline}*`,
+        `_${article.kategori} • Yayasan Nashirus Sunnah Purbalingga_`,
+        '',
+        article.lead,
+        ...(article.bodyParagraphs || [])
+      ];
+
+      if (article.quote && article.quote.text && article.quote.text.trim()) {
+        const qClean = article.quote.text.trim().replace(/^["“]|["”]$/g, '');
+        const attr = `${article.quote.speaker || 'Narasumber'}${article.quote.role ? `, ${article.quote.role}` : ''}`;
+        lines.push(`_"${qClean}"_ — *${attr}*`);
+      }
+
+      if (article.tail) {
+        lines.push(article.tail);
+      }
+
+      lines.push('🌐 Selengkapnya di: https://yns.or.id');
+      return lines.filter((item, idx) => idx === 2 || Boolean(item)).join('\n\n').replace(/\n\n\n\n/g, '\n\n');
+    }
+
+    function copyWhatsAppText() {
+      if (!currentArticle) return;
+      const waText = formatWhatsAppText(currentArticle);
+      if (copyToClipboard(waText)) {
+        showToast('Teks WhatsApp rapi (*bold* & _italic_) berhasil disalin!', 'success');
+      } else {
+        showToast('Gagal menyalin teks WhatsApp.', 'error');
+      }
+    }
+
+    // ==================== RIWAYAT ARTIKEL (LOCALSTORAGE, MAKS. 20) ====================
+    function getHistory() {
+      const saved = safeGetStorage(STORAGE_KEYS.HISTORY, []);
+      return Array.isArray(saved) ? saved : [];
+    }
+
+    function saveArticleToHistory(article, notify = true) {
+      if (!article) return;
+      const history = getHistory().filter(item => item.id !== article.id);
+      history.unshift(JSON.parse(JSON.stringify(article)));
+      safeSetStorage(STORAGE_KEYS.HISTORY, history.slice(0, 20));
+      renderHistoryDrawer();
+      if (notify) {
+        showToast('Perubahan artikel berhasil disimpan ke Riwayat.', 'success');
+      }
+    }
+
+    function saveCurrentToHistoryManual() {
+      if (!currentArticle) return;
+      onEditorBlockInput();
+      saveArticleToHistory(currentArticle, true);
+    }
+
+    function renderHistoryDrawer() {
+      const history = getHistory();
+      document.getElementById('header-history-count').textContent = history.length;
+      document.getElementById('drawer-history-count').textContent = history.length;
+
+      const clearBtn = document.getElementById('btn-clear-history');
+      const listEl = document.getElementById('history-list');
+
+      if (history.length === 0) {
+        clearBtn.classList.add('hidden');
+        listEl.innerHTML = `
+          <div class="text-center py-12 px-4 text-xs text-slate-400 space-y-2">
+            <p class="font-bold text-slate-500">Belum ada riwayat artikel.</p>
+            <p>Setiap artikel yang kamu generate akan tersimpan otomatis di sini (maksimal 20 terakhir).</p>
+          </div>
+        `;
+        return;
+      }
+
+      clearBtn.classList.remove('hidden');
+      listEl.innerHTML = '';
+
+      history.forEach((item, idx) => {
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-xl border border-yns-border p-4 shadow-sm space-y-2.5';
+        card.innerHTML = `
+          <div class="flex items-center justify-between gap-2 text-[10px] font-bold uppercase">
+            <span class="px-2 py-0.5 rounded bg-yns-emeraldSoft text-yns-emeraldDark">${escapeHtml(item.kategori)}</span>
+            <span class="text-slate-400">${escapeHtml(item.date)}</span>
+          </div>
+          <h4 class="font-serif font-bold text-sm text-yns-emeraldDark leading-snug line-clamp-2">${escapeHtml(item.activeHeadline || (item.headlines && item.headlines[0]) || 'Tanpa Judul')}</h4>
+          <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
+            <span class="text-[10px] font-semibold text-slate-500">${countWords((item.bodyParagraphs || []).join(' ') + ' ' + (item.lead || ''))} kata</span>
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="openHistoryItem(${idx})" class="px-2.5 py-1 rounded-lg bg-yns-emeraldSoft hover:bg-emerald-100 text-yns-emeraldDark text-[11px] font-bold transition-colors">Buka</button>
+              <button type="button" onclick="copyHistoryHtml(${idx})" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold transition-colors">HTML</button>
+              <button type="button" onclick="deleteHistoryItem(${idx})" class="px-2 py-1 rounded-lg text-red-600 hover:bg-red-50 text-[11px] font-bold transition-colors">Hapus</button>
+            </div>
+          </div>
+        `;
+        listEl.appendChild(card);
+      });
+    }
+
+    function openHistoryItem(index) {
+      const item = getHistory()[index];
+      if (!item) return;
+      currentArticle = JSON.parse(JSON.stringify(item));
+      document.getElementById('studio-empty').classList.add('hidden');
+      document.getElementById('studio-result').classList.remove('hidden');
+      renderStudioAll(currentArticle);
+      switchStudioTab('editor');
+      closeHistoryDrawer();
+      showToast('Artikel dari riwayat berhasil dibuka kembali.', 'info');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function copyHistoryHtml(index) {
+      const item = getHistory()[index];
+      if (!item) return;
+      if (copyToClipboard(buildWordPressHtml(item))) {
+        showToast('Kode HTML WordPress dari riwayat disalin!', 'success');
+      }
+    }
+
+    function deleteHistoryItem(index) {
+      const history = getHistory();
+      history.splice(index, 1);
+      safeSetStorage(STORAGE_KEYS.HISTORY, history);
+      renderHistoryDrawer();
+      showToast('Artikel dihapus dari riwayat.', 'info');
+    }
+
+    function clearAllHistory() {
+      safeSetStorage(STORAGE_KEYS.HISTORY, []);
+      renderHistoryDrawer();
+      showToast('Seluruh riwayat artikel telah dibersihkan.', 'info');
+    }
+
+    function openHistoryDrawer() {
+      renderHistoryDrawer();
+      document.getElementById('drawer-history').classList.remove('hidden');
+      document.body.classList.add('overflow-hidden');
+    }
+
+    function closeHistoryDrawer() {
+      document.getElementById('drawer-history').classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+    }
+
+    // ==================== PENGATURAN API KEY (OPSIONAL) ====================
+    function updateAiStatusBadge() {
+      const customKey = (safeGetStorage(STORAGE_KEYS.CUSTOM_API_KEY, '') || '').trim();
+      const pill = document.getElementById('ai-status-pill');
+      if (customKey) {
+        pill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-yns-goldBright"></span> Gemini AI (API Mandiri)`;
+        pill.className = 'inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-yns-goldSoft text-yns-gold border border-amber-200';
+      } else {
+        pill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-yns-emerald animate-pulse"></span> Gemini AI Siap`;
+        pill.className = 'inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-yns-emeraldSoft text-yns-emerald border border-emerald-200';
+      }
+    }
+
+    function openApiModal() {
+      document.getElementById('input-custom-api-key').value = safeGetStorage(STORAGE_KEYS.CUSTOM_API_KEY, '') || '';
+      openModal('modal-api');
+    }
+
+    function saveCustomApiKey() {
+      const key = document.getElementById('input-custom-api-key').value.trim();
+      safeSetStorage(STORAGE_KEYS.CUSTOM_API_KEY, key);
+      updateAiStatusBadge();
+      closeModal('modal-api');
+      showToast(key ? 'API Key Gemini mandiri berhasil disimpan.' : 'Menggunakan koneksi Gemini AI bawaan.', 'success');
+    }
+
+    function clearCustomApiKey() {
+      safeSetStorage(STORAGE_KEYS.CUSTOM_API_KEY, '');
+      document.getElementById('input-custom-api-key').value = '';
+      updateAiStatusBadge();
+      closeModal('modal-api');
+      showToast('Pengaturan API direset ke koneksi bawaan.', 'info');
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+      document.body.classList.add('overflow-hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+    }
+
+    // ==================== INISIALISASI APLIKASI ====================
+    window.addEventListener('DOMContentLoaded', () => {
+      update5W1HProgress();
+      updateAiStatusBadge();
+      renderHistoryDrawer();
+      switchStudioTab('editor');
+    });
+  </script>
+</body>
+</html>
+```
